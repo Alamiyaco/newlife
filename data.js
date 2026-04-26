@@ -1,2 +1,54 @@
-const SampleData={expenses:[{day:"الأحد",date:"2026-04-26",amount:1.5,type:"كروة",notes:""},{day:"الأحد",date:"2026-04-26",amount:2,type:"حلويات",notes:""},{day:"الأحد",date:"2026-04-26",amount:12,type:"اكل بالشغل",notes:""},{day:"الأحد",date:"2026-04-26",amount:20,type:"حلويات",notes:""},{day:"الاثنين",date:"2026-04-27",amount:12,type:"كروة",notes:""},{day:"الاثنين",date:"2026-04-27",amount:4,type:"تخليص",notes:""},{day:"الاثنين",date:"2026-04-27",amount:8,type:"اكل بالبيت",notes:""},{day:"الاثنين",date:"2026-04-27",amount:12,type:"مصاريف بالبيت",notes:""},{day:"الاثنين",date:"2026-04-27",amount:5,type:"اكل بالشغل",notes:""}],delays:[{day:"الأحد",date:"2026-04-26",minutes:4},{day:"الاثنين",date:"2026-04-27",minutes:12},{day:"الثلاثاء",date:"2026-04-28",minutes:8},{day:"الأربعاء",date:"2026-04-29",minutes:0},{day:"الخميس",date:"2026-04-30",minutes:18}],outings:[{day:"الأحد",date:"2026-04-26",description:"طلعة قصيرة",duration:15},{day:"الاثنين",date:"2026-04-27",description:"مراجعة",duration:45},{day:"الثلاثاء",date:"2026-04-28",description:"مهمة خارجية",duration:35}],events:[{group:"العمل",events:[{title:"توظفت",date:"2026-04-01"},{title:"باشرت بالعمل",date:"2026-04-03"},{title:"استلمت أول راتب",date:"2026-04-15"}]},{group:"مشروع شخصي",events:[{title:"بداية الفكرة",date:"2026-02-04"},{title:"أول تجربة",date:"2026-03-10"},{title:"تطوير النسخة",date:"2026-04-22"}]}]};
-async function loadDashboardData(){if(!CONFIG.API_URL){setConnectionStatus("وضع تجريبي - أضف رابط Apps Script");return SampleData}const response=await fetch(CONFIG.API_URL,{cache:"no-store"});if(!response.ok)throw new Error("تعذر الاتصال برابط Google Apps Script");const data=await response.json();if(data.error)throw new Error(data.error);setConnectionStatus("متصل بنجاح");return data}function setConnectionStatus(text){const el=document.getElementById("connectionStatus");if(el)el.textContent=text}
+async function loadDashboardData() {
+  if (!CONFIG.API_URL) {
+    setConnectionStatus("غير متصل - لم يتم وضع رابط Apps Script");
+    throw new Error("لم يتم وضع رابط Google Apps Script داخل ملف config.js");
+  }
+
+  const data = await loadByJsonp(CONFIG.API_URL);
+
+  if (data.error) {
+    throw new Error(data.error);
+  }
+
+  setConnectionStatus("متصل بنجاح");
+  return data;
+}
+
+function loadByJsonp(url) {
+  return new Promise((resolve, reject) => {
+    const callbackName = "jsonpCallback_" + Date.now();
+
+    window[callbackName] = function(data) {
+      resolve(data);
+      cleanup();
+    };
+
+    const script = document.createElement("script");
+    const separator = url.includes("?") ? "&" : "?";
+
+    script.src = url + separator + "callback=" + callbackName + "&t=" + Date.now();
+
+    script.onerror = function() {
+      reject(new Error("تعذر الاتصال بملف Google Sheet"));
+      cleanup();
+    };
+
+    function cleanup() {
+      delete window[callbackName];
+
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+    }
+
+    document.body.appendChild(script);
+  });
+}
+
+function setConnectionStatus(text) {
+  const el = document.getElementById("connectionStatus");
+
+  if (el) {
+    el.textContent = text;
+  }
+}

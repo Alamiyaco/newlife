@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>لوحة المتابعة الشخصية</title>
+
+  <link rel="stylesheet" href="css/styles.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/app.js" defer></script>
+</head>
+
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">✦</div>
+        <div>
+          <h1>PAIN LOVE</h1>
+          <p>Personal Dashboard</p>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-item active" data-page="expensesPage"><span>💸</span><b>تحليل المصاريف</b></button>
+        <button class="nav-item" data-page="delaysPage"><span>⏱️</span><b>التأخيرات</b></button>
+        <button class="nav-item" data-page="outingsPage"><span>🚶</span><b>الطلعات</b></button>
+        <button class="nav-item" data-page="eventsPage"><span>🧭</span><b>الأحداث</b></button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <small>مرتبط بـ Google Sheet</small>
+        <strong id="connectionStatus">جاري التحقق...</strong>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h2 id="pageTitle">تحليل المصاريف</h2>
+          <p id="pageSubtitle">تحليل واضح لمصاريفك حسب النوع، الفترة، والشهر.</p>
+        </div>
+        <button id="refreshBtn" class="btn">تحديث البيانات</button>
+      </header>
+
+      <section id="loadingBox" class="loading-card">
+        <div class="loader"></div>
+        <p>جاري تحميل البيانات...</p>
+      </section>
+
+      <section id="errorBox" class="error-card hidden"></section>
+
+      <section id="expensesPage" class="page active-page">
+        <div class="filters-card">
+          <div><label>من تاريخ</label><input id="expenseFrom" type="date" /></div>
+          <div><label>إلى تاريخ</label><input id="expenseTo" type="date" /></div>
+          <div><label>النوع</label><select id="expenseTypeFilter"><option value="">كل الأنواع</option></select></div>
+          <button id="applyExpenseFilters" class="btn primary">تطبيق الفلتر</button>
+          <button id="clearExpenseFilters" class="btn ghost">مسح</button>
+        </div>
+
+        <div class="stats-grid">
+          <article class="stat-card"><span>إجمالي المصاريف</span><strong id="expenseTotal">$0.00</strong><small>ضمن الفترة المحددة</small></article>
+          <article class="stat-card"><span>مصاريف هذا الشهر</span><strong id="expenseMonth">$0.00</strong><small>الشهر الحالي</small></article>
+          <article class="stat-card"><span>متوسط الصرف اليومي</span><strong id="expenseDailyAvg">$0.00</strong><small>حسب الأيام التي تحتوي مصاريف</small></article>
+          <article class="stat-card"><span>أعلى نوع صرف</span><strong id="expenseTopType">-</strong><small id="expenseTopTypeAmount">$0.00</small></article>
+        </div>
+
+        <div class="dashboard-grid">
+          <article class="panel large"><div class="panel-head"><div><h3>تطور المصاريف حسب التاريخ</h3><p>يعرض مجموع الصرف اليومي ضمن الفترة المختارة</p></div><span class="pill">Line Analysis</span></div><canvas id="expensesTrendChart"></canvas></article>
+          <article class="panel"><div class="panel-head"><div><h3>الصرف حسب النوع</h3><p>الكروة، الأكل، الحلويات، وغيرها</p></div></div><canvas id="expensesTypeChart"></canvas></article>
+          <article class="panel"><div class="panel-head"><div><h3>مصاريف الأيام</h3><p>أي يوم يصير بيه صرف أكثر؟</p></div></div><canvas id="expensesDayChart"></canvas></article>
+          <article class="panel large"><div class="panel-head"><div><h3>آخر المصاريف</h3><p>تفاصيل آخر العمليات المسجلة</p></div></div><div class="table-wrap"><table><thead><tr><th>اليوم</th><th>التاريخ</th><th>المبلغ</th><th>النوع</th><th>ملاحظات</th></tr></thead><tbody id="expensesTable"></tbody></table></div></article>
+        </div>
+      </section>
+
+      <section id="delaysPage" class="page">
+        <div class="filters-card small-filter">
+          <div><label>من تاريخ</label><input id="delayFrom" type="date" /></div>
+          <div><label>إلى تاريخ</label><input id="delayTo" type="date" /></div>
+          <button id="applyDelayFilters" class="btn primary">تطبيق الفلتر</button>
+          <button id="clearDelayFilters" class="btn ghost">مسح</button>
+        </div>
+        <div class="stats-grid">
+          <article class="stat-card"><span>مجموع دقائق التأخير</span><strong id="delayTotal">0</strong><small>دقيقة</small></article>
+          <article class="stat-card"><span>عدد أيام التأخير</span><strong id="delayDays">0</strong><small>يوم</small></article>
+          <article class="stat-card"><span>متوسط التأخير</span><strong id="delayAvg">0</strong><small>دقيقة باليوم</small></article>
+          <article class="stat-card"><span>أعلى تأخير</span><strong id="delayMax">0</strong><small id="delayMaxDate">-</small></article>
+        </div>
+        <article class="panel full"><div class="panel-head"><div><h3>تحليل التأخير اليومي</h3><p>لاين تحليلي يوضح عدد الدقائق المتأخرة يومياً</p></div><span class="pill">Minutes / Day</span></div><canvas id="delaysLineChart"></canvas></article>
+        <article class="panel full mt"><div class="panel-head"><div><h3>سجل التأخيرات</h3><p>تفاصيل التأخير حسب التاريخ</p></div></div><div class="table-wrap"><table><thead><tr><th>اليوم</th><th>التاريخ</th><th>معدل التأخير</th></tr></thead><tbody id="delaysTable"></tbody></table></div></article>
+      </section>
+
+      <section id="outingsPage" class="page">
+        <div class="stats-grid">
+          <article class="stat-card"><span>عدد الطلعات</span><strong id="outingsCount">0</strong><small>عملية مسجلة</small></article>
+          <article class="stat-card"><span>مجموع الوقت</span><strong id="outingsTotalTime">0</strong><small>دقيقة تقريباً</small></article>
+          <article class="stat-card"><span>متوسط الطلعة</span><strong id="outingsAvgTime">0</strong><small>دقيقة</small></article>
+          <article class="stat-card"><span>أكثر يوم طلعات</span><strong id="outingsTopDay">-</strong><small id="outingsTopDayCount">0 طلعة</small></article>
+        </div>
+        <div class="dashboard-grid">
+          <article class="panel"><div class="panel-head"><div><h3>عدد الطلعات حسب اليوم</h3><p>توزيع الطلعات على أيام الأسبوع</p></div></div><canvas id="outingsDayChart"></canvas></article>
+          <article class="panel"><div class="panel-head"><div><h3>الوقت المستغرق حسب التاريخ</h3><p>تحليل الوقت المستغرق يومياً</p></div></div><canvas id="outingsTimeChart"></canvas></article>
+          <article class="panel full"><div class="panel-head"><div><h3>سجل الطلعات</h3><p>اليوم، التاريخ، الشرح، والوقت المستغرق</p></div></div><div class="table-wrap"><table><thead><tr><th>اليوم</th><th>التاريخ</th><th>الشرح</th><th>الوقت المستغرق</th></tr></thead><tbody id="outingsTable"></tbody></table></div></article>
+        </div>
+      </section>
+
+      <section id="eventsPage" class="page">
+        <div class="event-info-card"><div><h3>الأحداث الزمنية</h3><p>كل مجموعة أحداث تظهر كخط زمني أفقي مستقل. المسافة بين الدوائر محسوبة حسب عدد الأيام الحقيقي بين التواريخ، والخط يستمر إلى تاريخ اليوم.</p></div><div class="today-badge"><span>اليوم</span><strong id="todayLabel">-</strong></div></div>
+        <div id="timelinesWrap" class="timelines-wrap"></div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

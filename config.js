@@ -1,7 +1,4 @@
-/*
-  ضع رابط Web App من Google Apps Script هنا بعد النشر.
-*/
 const CONFIG = {
-  API_URL: "https://script.google.com/macros/s/AKfycbxComIbq5bxpj4lNYbjvwgMWxjJwXSpbAZym_nAVJhjG2JLe4Af2QxL1EGfHzxjlSu9/exec",
+  API_URL: "https://script.google.com/macros/s/AKfycby6FQa5Gf7hcAUW-LjzrSiGGTRmvZWO2uZVtqO7OpFmt_DqdE99Ak0CoAz41bVbqiHa/exec",
   CURRENCY: "$"
 };

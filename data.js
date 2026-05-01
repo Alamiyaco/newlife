@@ -1,54 +1,29 @@
 async function loadDashboardData() {
   if (!CONFIG.API_URL) {
-    setConnectionStatus("غير متصل - لم يتم وضع رابط Apps Script");
-    throw new Error("لم يتم وضع رابط Google Apps Script داخل ملف config.js");
+    setConnectionStatus("غير متصل - لا يوجد رابط");
+    throw new Error("API_URL غير موجود");
   }
 
-  const data = await loadByJsonp(CONFIG.API_URL);
+  try {
+    const response = await fetch(CONFIG.API_URL);
 
-  if (data.error) {
-    throw new Error(data.error);
-  }
+    const data = await response.json();
 
-  setConnectionStatus("متصل بنجاح");
-  return data;
-}
-
-function loadByJsonp(url) {
-  return new Promise((resolve, reject) => {
-    const callbackName = "jsonpCallback_" + Date.now();
-
-    window[callbackName] = function(data) {
-      resolve(data);
-      cleanup();
-    };
-
-    const script = document.createElement("script");
-    const separator = url.includes("?") ? "&" : "?";
-
-    script.src = url + separator + "callback=" + callbackName + "&t=" + Date.now();
-
-    script.onerror = function() {
-      reject(new Error("تعذر الاتصال بملف Google Sheet"));
-      cleanup();
-    };
-
-    function cleanup() {
-      delete window[callbackName];
-
-      if (script.parentNode) {
-        script.parentNode.removeChild(script);
-      }
+    if (data.error) {
+      throw new Error(data.error);
     }
 
-    document.body.appendChild(script);
-  });
+    setConnectionStatus("متصل بنجاح ✅");
+    return data;
+
+  } catch (err) {
+    setConnectionStatus("فشل الاتصال ❌");
+    console.error(err);
+    throw err;
+  }
 }
 
 function setConnectionStatus(text) {
   const el = document.getElementById("connectionStatus");
-
-  if (el) {
-    el.textContent = text;
-  }
+  if (el) el.textContent = text;
 }

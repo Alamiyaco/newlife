@@ -7,6 +7,10 @@ async function loadDashboardData() {
   try {
     const response = await fetch(CONFIG.API_URL);
 
+    if (!response.ok) {
+      throw new Error("HTTP Error: " + response.status);
+    }
+
     const data = await response.json();
 
     if (data.error) {
@@ -25,5 +29,7 @@ async function loadDashboardData() {
 
 function setConnectionStatus(text) {
   const el = document.getElementById("connectionStatus");
-  if (el) el.textContent = text;
+  if (el) {
+    el.textContent = text;
+  }
 }

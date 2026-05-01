@@ -14,11 +14,11 @@ async function loadDashboardData() {
     };
 
     const script = document.createElement("script");
-    script.src = CONFIG.API_URL + "?callback=" + callbackName;
+    script.src = CONFIG.API_URL + "?callback=" + callbackName + "&t=" + Date.now();
 
     script.onerror = function() {
       setConnectionStatus("فشل الاتصال ❌");
-      reject("فشل تحميل البيانات");
+      reject(new Error("فشل تحميل البيانات"));
       delete window[callbackName];
     };
 

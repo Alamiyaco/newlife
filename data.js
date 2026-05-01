@@ -4,32 +4,29 @@ async function loadDashboardData() {
     throw new Error("API_URL غير موجود");
   }
 
-  try {
-    const response = await fetch(CONFIG.API_URL);
+  return new Promise((resolve, reject) => {
+    const callbackName = "cb_" + Date.now();
 
-    if (!response.ok) {
-      throw new Error("HTTP Error: " + response.status);
-    }
+    window[callbackName] = function(data) {
+      setConnectionStatus("متصل بنجاح ✅");
+      resolve(data);
+      delete window[callbackName];
+    };
 
-    const data = await response.json();
+    const script = document.createElement("script");
+    script.src = CONFIG.API_URL + "?callback=" + callbackName;
 
-    if (data.error) {
-      throw new Error(data.error);
-    }
+    script.onerror = function() {
+      setConnectionStatus("فشل الاتصال ❌");
+      reject("فشل تحميل البيانات");
+      delete window[callbackName];
+    };
 
-    setConnectionStatus("متصل بنجاح ✅");
-    return data;
-
-  } catch (err) {
-    setConnectionStatus("فشل الاتصال ❌");
-    console.error(err);
-    throw err;
-  }
+    document.body.appendChild(script);
+  });
 }
 
 function setConnectionStatus(text) {
   const el = document.getElementById("connectionStatus");
-  if (el) {
-    el.textContent = text;
-  }
+  if (el) el.textContent = text;
 }
